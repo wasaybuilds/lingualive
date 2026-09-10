@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LinguaLive — real-time translated calls</title>
+    <meta
+      name="description"
+      content="Peer-to-peer calls with live speech translation. Everyone speaks their own language and hears their own."
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗣️</text></svg>"
+    />
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"
+      defer
+    ></script>
+    <script type="module" src="js/main.js"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">🗣️</span>
+        <span class="brand-name">LinguaLive</span>
+      </div>
+      <div id="status" class="status" role="status" aria-live="polite">
+        Ready
+      </div>
+    </header>
+
+    <!-- ───────────────────────── Setup ───────────────────────── -->
+    <main id="setup" class="panel">
+      <div class="hero">
+        <h1>Everyone speaks their language. Everyone hears their own.</h1>
+        <p class="sub">
+          Free, peer-to-peer, and translated on your own device. No account, no
+          API keys, and your audio never touches a server.
+        </p>
+      </div>
+
+      <form id="join-form" class="card" autocomplete="off">
+        <div class="field">
+          <label for="name">Your name</label>
+          <input id="name" type="text" maxlength="40" placeholder="Arslan" required />
+        </div>
+
+        <div class="field">
+          <label for="room">Room code</label>
+          <div class="row">
+            <input
+              id="room"
+              type="text"
+              maxlength="32"
+              placeholder="amber-cedar-421"
+              required
+            />
+            <button type="button" id="new-room" class="ghost">New</button>
+          </div>
+          <p class="hint">
+            Share this code (or the link after joining) with the other person.
+            First one in opens the room.
+          </p>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label for="speak-lang">I speak</label>
+            <select id="speak-lang"></select>
+          </div>
+          <div class="field">
+            <label for="hear-lang">Translate everything into</label>
+            <select id="hear-lang"></select>
+          </div>
+        </div>
+        <p class="hint hint-lang">
+          Both are normally your own language — you speak it, and everyone
+          else's words are turned into it. Only change the second one if you
+          would rather read and hear a different language than you speak.
+        </p>
+
+        <details class="advanced">
+          <summary>Advanced</summary>
+          <div class="field">
+            <label for="libre-url">LibreTranslate server (optional)</label>
+            <input
+              id="libre-url"
+              type="url"
+              placeholder="http://localhost:5000"
+            />
+            <p class="hint">
+              Point this at your own LibreTranslate instance to keep every
+              translation private and skip the public fallback entirely.
+            </p>
+          </div>
+        </details>
+
+        <div id="preflight" class="preflight"></div>
+
+        <button type="submit" id="join" class="primary">Join call</button>
+      </form>
+
+      <p class="footnote">
+        Best in Chrome or Edge on desktop. <strong>Wear headphones</strong> —
+        without them each side's speakers feed back into the other's microphone.
+      </p>
+    </main>
+
+    <!-- ───────────────────────── Call ───────────────────────── -->
+    <main id="call" class="panel" hidden>
+      <div class="callbar">
+        <div class="callbar-left">
+          <span class="room-label">Room</span>
+          <code id="room-code"></code>
+          <button type="button" id="copy-link" class="ghost small">
+            Copy invite link
+          </button>
+        </div>
+        <div class="callbar-right">
+          <div id="participants" class="participants"></div>
+          <button type="button" id="leave" class="danger small">Leave</button>
+        </div>
+      </div>
+
+      <section id="feed" class="feed" aria-live="polite" aria-label="Live transcript">
+        <div class="empty" id="feed-empty">
+          Waiting for someone to speak…
+        </div>
+      </section>
+
+      <div id="live-row" class="live-row" hidden>
+        <span class="live-dot" aria-hidden="true"></span>
+        <span id="live-text"></span>
+      </div>
+
+      <div class="controls">
+        <button type="button" id="mute" class="control" aria-pressed="false">
+          <span class="control-icon" aria-hidden="true">🎙️</span>
+          <span id="mute-label">Mute</span>
+        </button>
+
+        <button type="button" id="tts-toggle" class="control" aria-pressed="true">
+          <span class="control-icon" aria-hidden="true">🔊</span>
+          <span id="tts-label">Voice on</span>
+        </button>
+
+        <label class="control slider">
+          <span>Speed</span>
+          <input id="rate" type="range" min="0.7" max="1.6" step="0.05" value="1.05" />
+        </label>
+
+        <label class="control slider">
+          <span>Original voice</span>
+          <input id="duck" type="range" min="0" max="1" step="0.05" value="0.15" />
+        </label>
+
+        <label class="control select">
+          <span>Hearing</span>
+          <select id="hear-lang-live"></select>
+        </label>
+      </div>
+
+      <div id="audio-sinks" class="visually-hidden"></div>
+    </main>
+
+    <noscript>
+      <p style="padding: 2rem">LinguaLive needs JavaScript enabled.</p>
+    </noscript>
+  </body>
+</html>
