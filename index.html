@@ -8,37 +8,67 @@
       name="description"
       content="Peer-to-peer calls with live speech translation. Everyone speaks their own language and hears their own."
     />
+    <meta name="theme-color" content="#08090d" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="css/styles.css" />
     <link
       rel="icon"
       href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗣️</text></svg>"
     />
+
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"
       defer
     ></script>
     <script type="module" src="js/main.js"></script>
   </head>
+
   <body>
+    <div class="aurora" aria-hidden="true">
+      <span class="orb orb-a"></span>
+      <span class="orb orb-b"></span>
+      <span class="orb orb-c"></span>
+    </div>
+
     <header class="topbar">
       <div class="brand">
-        <span class="brand-mark" aria-hidden="true">🗣️</span>
-        <span class="brand-name">LinguaLive</span>
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
+            <path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4" />
+          </svg>
+        </span>
+        <span class="brand-name">Lingua<em>Live</em></span>
       </div>
       <div id="status" class="status" role="status" aria-live="polite">
-        Ready
+        <span class="status-dot" aria-hidden="true"></span>
+        <span class="status-text">Ready</span>
       </div>
     </header>
 
     <!-- ───────────────────────── Setup ───────────────────────── -->
     <main id="setup" class="panel">
-      <div class="hero">
-        <h1>Everyone speaks their language. Everyone hears their own.</h1>
-        <p class="sub">
-          Free, peer-to-peer, and translated on your own device. No account, no
-          API keys, and your audio never touches a server.
+      <section class="hero">
+        <p class="eyebrow">
+          <span class="pip" aria-hidden="true"></span>
+          Free forever · Peer-to-peer · No account
         </p>
-      </div>
+        <h1>
+          Everyone speaks their language.<br />
+          <span class="grad">Everyone hears their own.</span>
+        </h1>
+        <p class="sub">
+          Live speech translation for calls, translated on your own device.
+          No API keys, no subscription, and your audio never touches a server.
+        </p>
+      </section>
 
       <form id="join-form" class="card" autocomplete="off">
         <div class="field">
@@ -56,39 +86,54 @@
               placeholder="amber-cedar-421"
               required
             />
-            <button type="button" id="new-room" class="ghost">New</button>
+            <button type="button" id="new-room" class="ghost" title="Generate a new code">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8" />
+                <path d="M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16" />
+              </svg>
+              New
+            </button>
           </div>
           <p class="hint">
-            Share this code (or the link after joining) with the other person.
-            First one in opens the room.
+            Share this code — or the invite link once you're in. Whoever joins
+            first opens the room.
           </p>
         </div>
 
-        <div class="grid-2">
+        <div class="lang-pair">
           <div class="field">
             <label for="speak-lang">I speak</label>
-            <select id="speak-lang"></select>
+            <div class="select-wrap"><select id="speak-lang"></select></div>
+          </div>
+          <div class="pair-arrow" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
           </div>
           <div class="field">
-            <label for="hear-lang">Translate everything into</label>
-            <select id="hear-lang"></select>
+            <label for="hear-lang">Translate into</label>
+            <div class="select-wrap"><select id="hear-lang"></select></div>
           </div>
         </div>
         <p class="hint hint-lang">
           Both are normally your own language — you speak it, and everyone
-          else's words are turned into it. Only change the second one if you
-          would rather read and hear a different language than you speak.
+          else's words become it. Only change the second if you'd rather read
+          and hear something different from what you speak.
         </p>
 
         <details class="advanced">
-          <summary>Advanced</summary>
+          <summary>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M9 18l6-6-6-6" />
+            </svg>
+            Advanced
+          </summary>
           <div class="field">
             <label for="libre-url">LibreTranslate server (optional)</label>
-            <input
-              id="libre-url"
-              type="url"
-              placeholder="http://localhost:5000"
-            />
+            <input id="libre-url" type="url" placeholder="http://localhost:5000" />
             <p class="hint">
               Point this at your own LibreTranslate instance to keep every
               translation private and skip the public fallback entirely.
@@ -98,12 +143,19 @@
 
         <div id="preflight" class="preflight"></div>
 
-        <button type="submit" id="join" class="primary">Join call</button>
+        <button type="submit" id="join" class="primary">
+          <span>Join call</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
+        </button>
       </form>
 
       <p class="footnote">
-        Best in Chrome or Edge on desktop. <strong>Wear headphones</strong> —
-        without them each side's speakers feed back into the other's microphone.
+        Best in Chrome or Edge on desktop.
+        <strong>Wear headphones</strong> — without them each side's speakers
+        feed back into the other's microphone.
       </p>
     </main>
 
@@ -111,10 +163,15 @@
     <main id="call" class="panel" hidden>
       <div class="callbar">
         <div class="callbar-left">
-          <span class="room-label">Room</span>
+          <span class="live-badge"><span class="live-dot"></span>Live</span>
           <code id="room-code"></code>
           <button type="button" id="copy-link" class="ghost small">
-            Copy invite link
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="9" y="9" width="12" height="12" rx="2" />
+              <path d="M5 15V5a2 2 0 0 1 2-2h10" />
+            </svg>
+            <span>Copy invite</span>
           </button>
         </div>
         <div class="callbar-right">
@@ -125,23 +182,39 @@
 
       <section id="feed" class="feed" aria-live="polite" aria-label="Live transcript">
         <div class="empty" id="feed-empty">
-          Waiting for someone to speak…
+          <div class="empty-ring" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
+              <path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4" />
+            </svg>
+          </div>
+          <p class="empty-title">Listening…</p>
+          <p class="empty-sub">Say something, or wait for the other side to speak.</p>
         </div>
       </section>
 
       <div id="live-row" class="live-row" hidden>
-        <span class="live-dot" aria-hidden="true"></span>
+        <span class="bars" aria-hidden="true"><i></i><i></i><i></i></span>
         <span id="live-text"></span>
       </div>
 
       <div class="controls">
-        <button type="button" id="mute" class="control" aria-pressed="false">
-          <span class="control-icon" aria-hidden="true">🎙️</span>
+        <button type="button" id="mute" class="control" aria-pressed="true">
+          <svg class="control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
+            <path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4" />
+          </svg>
           <span id="mute-label">Mute</span>
         </button>
 
         <button type="button" id="tts-toggle" class="control" aria-pressed="true">
-          <span class="control-icon" aria-hidden="true">🔊</span>
+          <svg class="control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M11 5 6 9H2v6h4l5 4V5z" />
+            <path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a9 9 0 0 1 0 14" />
+          </svg>
           <span id="tts-label">Voice on</span>
         </button>
 
@@ -151,13 +224,13 @@
         </label>
 
         <label class="control slider">
-          <span>Original voice</span>
+          <span>Original</span>
           <input id="duck" type="range" min="0" max="1" step="0.05" value="0.15" />
         </label>
 
         <label class="control select">
           <span>Hearing</span>
-          <select id="hear-lang-live"></select>
+          <div class="select-wrap tight"><select id="hear-lang-live"></select></div>
         </label>
       </div>
 

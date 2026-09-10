@@ -77,7 +77,12 @@ const state = {
 /* ── Status ──────────────────────────────────────────── */
 
 function setStatus(text, tone = '') {
-  el.status.textContent = text;
+  // The pill holds a status dot alongside the label, so only the label node
+  // may be rewritten.
+  const label = el.status.querySelector('.status-text');
+  if (label) label.textContent = text;
+  else el.status.textContent = text;
+
   if (tone) el.status.dataset.tone = tone;
   else delete el.status.dataset.tone;
 }
@@ -254,15 +259,44 @@ function initSetup() {
 
 /* ── Feed rendering ──────────────────────────────────── */
 
-function renderUtterance({ who, self, original, translated, engine, lang }) {
+/** Stable colour per person, so the same name always looks the same. */
+function hueFor(name) {
+  let hash = 0;
+  for (let i = 0; i < name.length; i += 1) {
+    hash = (hash * 31 + name.charCodeAt(i)) % 360;
+  }
+  return hash;
+}
+
+function initialsFor(name) {
+  const parts = String(name).trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return '?';
+  return ([...parts[0]][0] + (parts[1] ? [...parts[1]][0] : '')).toUpperCase();
+}
+
+function makeAvatar(name, title) {
+  const node = document.createElement('div');
+  node.className = 'avatar';
+  node.style.setProperty('--h', hueFor(name));
+  node.textContent = initialsFor(name);
+  node.title = title || name;
+  return node;
+}
+
+function renderUtterance({ who, self, original, translated, engine, lang, srcLang }) {
   el.feedEmpty.hidden = true;
 
   const item = document.createElement('article');
   item.className = self ? 'utterance self' : 'utterance';
+  item.append(makeAvatar(who));
+
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
 
   const head = document.createElement('div');
   head.className = 'who';
   const name = document.createElement('span');
+  name.className = 'name';
   name.textContent = who;
   const meta = document.createElement('span');
   meta.className = 'engine';
@@ -278,7 +312,7 @@ function renderUtterance({ who, self, original, translated, engine, lang }) {
   main.textContent = translated;
   if (isRTL(lang)) main.dir = 'rtl';
 
-  item.append(head, main);
+  bubble.append(head, main);
 
   // Keep the source text visible; it is the only way a bilingual listener can
   // catch a mistranslation, and it matters when the wording is consequential.
@@ -286,9 +320,13 @@ function renderUtterance({ who, self, original, translated, engine, lang }) {
     const src = document.createElement('div');
     src.className = 'original';
     src.textContent = original;
-    item.append(src);
+    // The source line is in the speaker's language, which may run the other
+    // way from the translation directly above it.
+    src.dir = isRTL(srcLang || lang) ? 'rtl' : 'ltr';
+    bubble.append(src);
   }
 
+  item.append(bubble);
   el.feed.append(item);
   while (el.feed.children.length > MAX_FEED_ITEMS + 1) {
     // +1 accounts for the persistent empty-state node.
@@ -309,17 +347,11 @@ function showLive(text) {
 }
 
 function renderParticipants() {
-  const chips = [
-    `<span class="chip self">${escapeHtml(state.displayName)} (you)</span>`,
-    ...[...state.names.values()].map(
-      (n) => `<span class="chip">${escapeHtml(n)}</span>`,
-    ),
-  ];
-  el.participants.innerHTML = chips.join('');
+  const frag = document.createDocumentFragment();
+  frag.append(makeAvatar(state.displayName, `${state.displayName} (you)`));
+  state.names.forEach((name) => frag.append(makeAvatar(name)));
+  el.participants.replaceChildren(frag);
 }
-
-const escapeHtml = (s) =>
-  String(s).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
 /* ── Audio sinks ─────────────────────────────────────── */
 
@@ -542,6 +574,7 @@ async function handleMessage({ data, name }) {
     translated,
     engine,
     lang: state.hearLang,
+    srcLang: data.lang,
   });
 
   tts.speak(translated, state.hearLang);
@@ -570,8 +603,8 @@ function initControls() {
     state.localStream?.getAudioTracks().forEach((t) => {
       t.enabled = !state.muted;
     });
+    // aria-pressed tracks "mic is live", which is also what the dock styles on.
     el.mute.setAttribute('aria-pressed', String(!state.muted));
-    el.mute.dataset.danger = String(state.muted);
     el.muteLabel.textContent = state.muted ? 'Muted' : 'Mute';
   });
 
